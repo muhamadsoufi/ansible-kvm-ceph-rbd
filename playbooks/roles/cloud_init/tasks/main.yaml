@@ -1,0 +1,32 @@
+- name: Create temp directory for each VM
+  file:
+    path: "/tmp/{{ item.name }}"
+    state: directory
+  loop: "{{ vms }}"
+
+- name: Render cloud-init files
+  template:
+    src: user-data.j2
+    dest: "/tmp/{{ item.name }}/user-data"
+  loop: "{{ vms }}"
+
+- name: Render network-config
+  template:
+    src: network-config.j2
+    dest: "/tmp/{{ item.name }}/network-config"
+  loop: "{{ vms }}"
+
+- name: Render meta-data-config
+  template:
+    src: meta-data.j2
+    dest: "/tmp/{{ item.name }}/meta-data"
+  loop: "{{ vms }}"
+
+- name: Create ISO
+  shell: >
+    genisoimage -output /var/lib/libvirt/images/{{ item.name }}-cloudinit.iso
+    -volid cidata -joliet -rock
+    /tmp/{{ item.name }}/user-data
+    /tmp/{{ item.name }}/meta-data
+    /tmp/{{ item.name }}/network-config
+  loop: "{{ vms }}"

@@ -1,0 +1,11 @@
+- name: Define libvirt bridge network
+  shell: |
+    echo "<network>
+      <name>br0-net</name>
+      <forward mode='bridge'/>
+      <bridge name='br0'/>
+    </network>" > /tmp/net.xml
+
+    virsh net-info br0-net || virsh net-define /tmp/net.xml
+    virsh net-start br0-net || true
+    virsh net-autostart br0-net || true

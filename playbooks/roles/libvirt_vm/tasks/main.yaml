@@ -1,0 +1,25 @@
+- debug:
+    var: vms
+
+- name: Render VM XML
+  template:
+    src: vm.xml.j2
+    dest: "/tmp/{{ vm.name }}.xml"
+  loop: "{{ vms }}"
+  loop_control:
+    loop_var: vm
+
+- name: Define VM
+  shell: virsh domstate {{ vm.name }} >/dev/null 2>&1 || virsh define /tmp/{{ vm.name }}.xml
+#  loop: "{{ vms }}"
+  loop: "{{ missing_rbd }}"
+  loop_control:
+    loop_var: vm
+
+
+- name: Start VM
+  shell: virsh domstate {{ vm.name }} | grep -q "running" || virsh start {{ vm.name }}
+#  loop: "{{ vms }}"
+  loop: "{{ missing_rbd }}"
+  loop_control:
+    loop_var: vm

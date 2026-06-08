@@ -1,0 +1,18 @@
+ceph_pool: vm-rbd
+ceph_user: libvirt
+
+disk_size: 50G
+
+local_cloud_image: /opt/ubuntu-22.04-converted.raw
+
+ceph_monitors:
+  - 192.168.1.201
+  - 192.168.1.202
+  - 192.168.1.203
+
+ceph_secret_uuid: "11111111-2222-3333-4444-555555555555"
+ceph_secret_value: "AQDpfiFqg1p0MxAAiPG5yVEl3bqvvL+9vG6LqQ=="
+
+ssh_user: ubuntu
+ssh_password: "Xyz@123321"
+vm_gateway: 192.168.1.1

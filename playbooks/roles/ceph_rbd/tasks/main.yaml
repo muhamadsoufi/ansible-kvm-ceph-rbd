@@ -1,0 +1,73 @@
+- name: Define Ceph Secret & Set Value
+  shell: |
+    echo "<secret ephemeral='no' private='no'>
+      <uuid>{{ ceph_secret_uuid }}</uuid>
+      <usage type='ceph'>
+        <name>ceph-user-secret</name>
+      </usage>
+    </secret>" > /tmp/sec.xml
+
+    virsh secret-list | grep ceph-user-secret || virsh secret-define /tmp/sec.xml
+    virsh secret-set-value --secret {{ ceph_secret_uuid }} --base64 {{ ceph_secret_value }}
+
+- name: Create Ceph keyring
+  copy:
+    dest: /tmp/ceph.keyring
+    content: |
+      [client.{{ ceph_user }}]
+        key = {{ ceph_secret_value }}
+
+- name: Check RBD existence
+  shell: >
+    rbd info {{ ceph_pool }}/{{ item.name }}-root
+    --id {{ ceph_user }}
+    --keyring /tmp/ceph.keyring
+  loop: "{{ vms }}"
+  register: rbd_check
+  failed_when: false
+
+- name: Set list of missing RBDs
+  set_fact:
+    missing_rbd: "{{ rbd_check.results | selectattr('rc','ne',0) | map(attribute='item') | list }}"
+
+#- name: Create empty RBD images with correct size
+#  shell: >
+#    rbd create {{ ceph_pool }}/{{ item.name }}-root
+#    --id {{ ceph_user }}
+#    --keyring /tmp/ceph.keyring
+#    --size {{ disk_size }}
+#  loop: "{{ missing_rbd }}"
+#  throttle: 3
+
+#- name: Convert and write cloud image directly into empty RBD
+#  shell: >
+#    qemu-img convert -n -O raw
+#    {{ local_cloud_image }}
+#    rbd:{{ ceph_pool }}/{{ item.name }}-root:id={{ ceph_user }}:keyring=/tmp/ceph.keyring
+#  loop: "{{ missing_rbd }}"
+#  throttle: 3
+
+- name: Import images to Ceph
+  shell: >
+    rbd import {{ local_cloud_image }}
+    {{ ceph_pool }}/{{ item.item.name }}-root
+    --id {{ ceph_user }}
+    --keyring /tmp/ceph.keyring
+  loop: "{{ rbd_check.results }}"
+  when: item.rc != 0
+  throttle: 3
+
+- name: Resize RBD
+  shell: >
+    rbd resize --size {{ disk_size }}
+    {{ ceph_pool }}/{{ item.name }}-root
+    --id {{ ceph_user }}
+    --keyring /tmp/ceph.keyring
+  loop: "{{ missing_rbd }}"
+  throttle: 3
+  register: resize_result
+  failed_when:
+    - resize_result.rc != 0
+    - "'new size is equal to original size' not in resize_result.stderr"
+
+

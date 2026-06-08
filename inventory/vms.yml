@@ -1,0 +1,35 @@
+vms:
+  - name: vm01
+    ip: 192.168.1.50
+    memory: 4194304
+    vcpu: 3
+
+  - name: vm02
+    ip: 192.168.1.51
+    memory: 4194304
+    vcpu: 2
+
+#  - name: vm03
+#    ip: 192.168.1.52
+#    memory: 4194304
+#    vcpu: 2
+
+#  - name: vm04
+#    ip: 192.168.1.53
+#    memory: 4194304
+#    vcpu: 2
+
+#  - name: vm05
+#    ip: 192.168.1.54
+#    memory: 4194304
+#    vcpu: 2
+
+#  - name: vm06
+#    ip: 192.168.1.55
+#    memory: 4194304
+#    vcpu: 2
+
+#  - name: vm07
+#    ip: 192.168.1.56
+#    memory: 4194304
+#    vcpu: 2

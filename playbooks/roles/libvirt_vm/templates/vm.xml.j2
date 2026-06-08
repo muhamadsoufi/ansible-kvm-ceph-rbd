@@ -1,0 +1,56 @@
+<domain type='kvm'>
+  <name>{{ vm.name }}</name>
+  <memory unit='KiB'>{{ vm.memory }}</memory>
+  <currentMemory unit='KiB'>{{ vm.memory }}</currentMemory>
+  <vcpu placement='static'>{{ vm.vcpu }}</vcpu>
+  <os>
+    <type arch='x86_64' machine='pc-q35-6.2'>hvm</type>
+    <boot dev='hd'/>
+    <boot dev='cdrom'/> 
+  </os>
+  <features>
+    <acpi/><apic/>
+  </features>
+  <cpu mode='host-passthrough' check='none' migratable='on'/>
+  <clock offset='utc'>
+    <timer name='rtc' tickpolicy='catchup'/>
+    <timer name='pit' tickpolicy='delay'/>
+  </clock>
+  <on_poweroff>destroy</on_poweroff>
+  <on_reboot>restart</on_reboot>
+  <on_crash>destroy</on_crash>
+  <devices>
+    <emulator>/usr/bin/qemu-system-x86_64</emulator>
+    <graphics type='vnc' port='-1' autoport='yes' listen='0.0.0.0'/>
+    <video><model type='cirrus'/></video>
+    
+    <disk type='network' device='disk'>
+      <driver name='qemu' type='raw'/>
+      <auth username='{{ ceph_user }}'>
+        <secret type='ceph' uuid='{{ ceph_secret_uuid }}'/>
+      </auth>
+      <source protocol='rbd' name='{{ ceph_pool }}/{{ vm.name }}-root'>
+        {% for mon in ceph_monitors %}
+        <host name='{{ mon }}' port='6789'/>
+        {% endfor %}
+      </source>
+      <target dev='vda' bus='virtio'/>
+    </disk>
+
+    <disk type='file' device='cdrom'>
+      <driver name='qemu' type='raw'/>
+      <source file='/var/lib/libvirt/images/{{ vm.name }}-cloudinit.iso'/>
+      <target dev='sda' bus='sata'/>
+      <readonly/>
+    </disk>
+
+    <controller type='usb' index='0' model='qemu-xhci' ports='15'/>
+    <controller type='pci' index='0' model='pcie-root'/>
+    <interface type='network'>
+      <source network='br0-net'/>
+      <model type='virtio'/>
+    </interface>
+    <serial type='pty'><target type='isa-serial' port='0'/></serial>
+    <console type='pty'><target type='serial' port='0'/></console>
+  </devices>
+</domain>

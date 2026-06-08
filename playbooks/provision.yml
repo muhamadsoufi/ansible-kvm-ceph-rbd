@@ -1,0 +1,16 @@
+- name: VM Provisioning Pipeline
+  hosts: localhost
+  connection: local
+  become: true
+
+  vars_files:
+    - ../inventory/vms.yml
+    - ../group_vars/all.yml
+
+  roles:
+    - common
+    - network
+    - ceph_rbd
+    - cloud_init
+    - libvirt_vm
+    - cleanup

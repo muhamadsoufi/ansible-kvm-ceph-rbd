@@ -1,0 +1,7 @@
+- name: Cleanup temp artifacts
+  file:
+    path: "{{ item }}"
+    state: absent
+  loop:
+    - /tmp/ceph.keyring
+    - /tmp/sec.xml

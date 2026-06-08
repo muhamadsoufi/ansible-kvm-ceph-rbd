@@ -1,0 +1,10 @@
+- name: Install required packages
+  apt:
+    pkg:
+      - genisoimage
+      - python3-passlib
+      - ceph-common
+      - libvirt-clients
+      - qemu-utils
+    state: present
+#    update_cache: yes

@@ -1,0 +1,19 @@
+#cloud-config
+ssh_pwauth: true
+users:
+  - name: {{ ssh_user }}
+    shell: /bin/bash
+    sudo: 
+      - ALL=(ALL) NOPASSWD:ALL
+    lock_passwd: false
+    password: {{ ssh_password | password_hash('sha512') }}
+chpasswd:
+  list: |
+    {{ ssh_user }}:{{ ssh_password }}
+  expire: false
+growpart:
+  mode: auto
+  devices: ['/']
+  ignore_growroot_disabled: false
+
+resize_rootfs: true
