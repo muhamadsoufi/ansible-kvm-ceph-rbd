@@ -25,7 +25,7 @@
     <video><model type='cirrus'/></video>
     
     <disk type='network' device='disk'>
-      <driver name='qemu' type='raw'/>
+      <driver name='qemu' type='raw' cache='none' io='native' discard='unmap'/>
       <auth username='{{ ceph_user }}'>
         <secret type='ceph' uuid='{{ ceph_secret_uuid }}'/>
       </auth>
