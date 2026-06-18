@@ -6,7 +6,7 @@ users:
     sudo: 
       - ALL=(ALL) NOPASSWD:ALL
     lock_passwd: false
-    password: {{ ssh_password | password_hash('sha512') }}
+    hashed_password: {{ ssh_password | password_hash('sha512') }}
 chpasswd:
   list: |
     {{ ssh_user }}:{{ ssh_password }}
